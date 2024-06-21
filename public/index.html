@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Registration Form</title>
+  <link rel="stylesheet" href="tmax_form.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <h1>Tmaxsoft Product Issue Report</h1>
+  <p>Please fill out this form with the required information</p>
+  <form id="myForm" method="post" action="/submit-form" enctype="multipart/form-data" onsubmit="confirmSubmission(event)">
+    <fieldset class="field_set">
+      <legend>Issue Details</legend>
+      <label for="product-name">Select Product Name <span style="color:red">*</span></label>
+      <select id="product-name" name="productName" required>
+          <option value="">select</option>
+          <option value="JEUS">JEUS</option>
+          <option value="WebToB">WebToB</option>
+          <option value="Tibero">Tibero</option>
+          <option value="Openframe">Openframe</option>
+      </select>
+      
+      <label for="client-name">Enter Client Name <span style="color:red">*</span></label>
+      <input id="client-name" name="clientName" type="text" required />
+      
+      <label for="project-name">Enter Project Name <span style="color:red">*</span></label>
+      <input id="project-name" name="projectName" type="text" placeholder="Enter name of project associated with the product" required />
+      
+      <label for="environment">Enter Environment <span style="color:red">*</span></label>
+      <select id="environment" name="environment" required>
+          <option value="">select</option>
+          <option value="DEV">DEV</option>
+          <option value="TEST">TEST</option>
+          <option value="ACC">ACC</option>
+          <option value="PROD">PROD</option>
+          <option value="QA">QA</option>
+      </select>
+      
+      <label for="server-ip">Enter Server IP</label>
+      <input id="server-ip" name="serverIP" class="newclass" type="text">
+      
+      <label for="server-hostname">Enter Server Hostname</label>
+      <input id="server-hostname" name="serverHostname" class="newclass" type="text">
+      
+      <label for="request-type">Enter Request Type</label>
+      <select id="request-type" name="requestType">
+          <option value="">select</option>
+          <option value="BUG">BUG</option>
+          <option value="Enhancement">Enhancement</option>
+          <option value="Technical Support">Technical Support</option>
+          <option value="Other">Other</option>
+      </select>
+      
+      <label for="severity">Enter Severity Category Level</label>
+      <select id="severity" name="severity">
+          <option value="">select</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+      </select>
+      
+      <label for="production-outage">For Production Outage please mention here</label>
+      <select id="production-outage" name="productionOutage">
+          <option value="">select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+      </select>
+    </fieldset>
+    
+    <fieldset>
+      <legend>Issue Description</legend>
+      <label for="expected-behaviour">Expected Behaviour:</label>
+      <textarea id="expected-behaviour" name="expectedBehaviour" rows="7" cols="30" placeholder="Enter description for expected behaviour"></textarea>
+      
+      <label for="actual-behaviour">Actual Behaviour:</label>
+      <textarea id="actual-behaviour" name="actualBehaviour" rows="7" cols="30" placeholder="Enter description for actual behaviour"></textarea>
+      
+      <label for="supported-documents">Upload Supported Documents:</label>
+      <input id="supported-documents" type="file" name="files" multiple />
+    </fieldset>
+    
+    <fieldset class="field_set">
+      <label for="product-version">Enter Product Version and patch info</label>
+      <input id="product-version" type="text" name="productVersion" />
+      
+      <label for="contact-info">Enter contact information</label>
+      <input id="contact-info" type="text" name="contactInfo" />
+    </fieldset>
+    
+    <fieldset>
+      <legend>Severity Levels</legend>
+      <p>Critical: Any loss of a Guaranteed Functionality or diminution of a Guaranteed Performance</p>
+      <p>High: At least one mission critical feature or functions within at least one individual Module is inaccessible or inoperable</p>
+      <p>Medium: Any Problem that affects performance of a Module and/or production environment</p>
+      <p>Low: Operating Inquiries</p>
+    </fieldset>
+    
+    <input type="submit" value="Submit" />
+  </form>
+
+  <div id="confirmationModal" class="modal">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h2>Confirmation</h2>
+          </div>
+          <div class="modal-body">
+              <p>You are about to submit the form to support.india@tmaxsoft.co.in <br> Do you want to proceed?</p>
+          </div>
+          <div class="modal-footer">
+              <button class="button button-ok" onclick="submitForm()">OK</button>
+              <button class="button button-cancel" onclick="closeModal()">Cancel</button>
+          </div>
+      </div>
+  </div>
+
+  <script>
+      // Ensure jspdf and jspdf-autotable libraries are included
+      function confirmSubmission(event) {
+          event.preventDefault();
+          var modal = document.getElementById("confirmationModal");
+          modal.style.display = "block";
+      }
+    
+      function closeModal() {
+          var modal = document.getElementById("confirmationModal");
+          modal.style.display = "none";
+      }
+    
+      function submitForm() {
+          closeModal();
+          generatePDF();
+          document.getElementById("myForm").submit();
+      }
+    
+      function generatePDF() {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+    
+          const product = document.getElementById("product-name").value;
+          const client = document.getElementById("client-name").value;
+          const project = document.getElementById("project-name").value;
+          const environment = document.getElementById("environment").value;
+          const serverIP = document.getElementById("server-ip").value;
+          const serverHostname = document.getElementById("server-hostname").value;
+          const requestType = document.getElementById("request-type").value;
+          const severity = document.getElementById("severity").value;
+          const productionOutage = document.getElementById("production-outage").value;
+          const expectedBehaviour = document.getElementById("expected-behaviour").value;
+          const actualBehaviour = document.getElementById("actual-behaviour").value;
+          const productVersion = document.getElementById("product-version").value;
+          const contactInfo = document.getElementById("contact-info").value;
+    
+          // Define the table content
+          const data = [
+              ["Product Name", product],
+              ["Client Name", client],
+              ["Project Name", project],
+              ["Environment", environment],
+              ["Server IP", serverIP],
+              ["Server Hostname", serverHostname],
+              ["Request Type", requestType],
+              ["Severity", severity],
+              ["Production Outage", productionOutage],
+              ["Expected Behaviour", expectedBehaviour],
+              ["Actual Behaviour", actualBehaviour],
+              ["Product Version", productVersion],
+              ["Contact Info", contactInfo]
+          ];
+    
+          doc.text("Tmaxsoft Product Issue Report", 10, 10);
+    
+          doc.autoTable({
+              startY: 20,
+              head: [['Field', 'Details']],
+              body: data
+          });
+    
+          const pdfFileName = `${client}_issuereport.pdf`;
+          doc.save(pdfFileName);
+      }
+    
+      window.onclick = function(event) {
+          var modal = document.getElementById("confirmationModal");
+          if (event.target == modal) {
+              modal.style.display = "none";
+          }
+      }
+    </script>
+</body>
+</html>
