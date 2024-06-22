@@ -1,9 +1,6 @@
 // Load environment variables from .env file
 require('dotenv').config();
 
-// Set the NODE_ENV variable to 'production'
-process.env.NODE_ENV = 'production';
-
 const express = require('express');
 const nodemailer = require('nodemailer');
 const path = require('path');
@@ -12,7 +9,7 @@ const multer = require('multer');
 const { jsPDF } = require('jspdf');
 require('jspdf-autotable');
 const bodyParser = require('body-parser');
-
+  
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -21,7 +18,11 @@ app.use(bodyParser.json());
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    const tmpDir = path.join('/tmp');
+    if (!fs.existsSync(tmpDir)) {
+      fs.mkdirSync(tmpDir);
+    }
+    cb(null, tmpDir);
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname);
@@ -35,7 +36,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.sender,
-    pass: process.env.password, // Ensure this is the correct app password
+    pass: process.env.password,
   },
 });
 
@@ -51,7 +52,7 @@ app.get('/', (req, res) => {
 app.post('/submit-form', upload.array('files', 12), async (req, res) => {
   const { clientName, productName, severity, ...formData } = req.body;
 
-  const pdfPath = path.join(__dirname, 'uploads', `${clientName}.pdf`);
+  const pdfPath = path.join('/tmp', `${clientName}.pdf`);
 
   try {
     await generatePDF(pdfPath, clientName, formData);
@@ -87,7 +88,7 @@ app.post('/submit-form', upload.array('files', 12), async (req, res) => {
         return res.status(500).send('Error sending email');
       } else {
         console.log('Email sent: ' + info.response);
-        res.send('Email sent successfully');
+        res.send('Thank you for filling out this form');
 
         // Delete the generated PDF and uploaded files after email is sent
         fs.unlinkSync(pdfPath);
@@ -114,7 +115,9 @@ async function generatePDF(pdfPath, clientName, formData) {
     startY: 20,
   });
 
-  pdfDoc.save(pdfPath);
+  // Save PDF as a buffer and write it to the file system
+  const pdfBuffer = pdfDoc.output('arraybuffer');
+  fs.writeFileSync(pdfPath, Buffer.from(pdfBuffer));
   console.log('PDF successfully generated:', pdfPath);
 }
 
