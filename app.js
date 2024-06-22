@@ -10,7 +10,6 @@ const multer = require('multer');
 const { jsPDF } = require('jspdf');
 require('jspdf-autotable');
 const bodyParser = require('body-parser');
-  
 const app = express();
 const PORT = process.env.PORT || 3000;
 
